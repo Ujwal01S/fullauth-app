@@ -1,10 +1,9 @@
-import GitHub from "next-auth/providers/github";
-import Google from "next-auth/providers/google";
+
 import authConfig from "@/auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "./lib/db";
 import { getUserById } from "./data/user";
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation";
 import { getAccountByUserId } from "./data/account";
 
@@ -42,7 +41,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       //Allow 0Auth without email verification
       if (account?.provider !== "credentials") return true;
 
-      const existingUser = await getUserById(user.id);
+      const existingUser = await getUserById(user.id as string);
 
       //Prevent sigin in without email verification
       if (!existingUser?.emailVerified) return false;
@@ -66,7 +65,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         session.user.id = token.sub; //session ma new field: id haleko , jasma token.sub vanne id haleko
       }
       if (token.role && session.user) {
-        session.user.role = token.role; //session ma new field: role haleko, jasma token.role vanne role haleko
+        session.user.role = token.role as "ADMIN" | "USER"; //session ma new field: role haleko, jasma token.role vanne role haleko
       }
 
       // if (session.user) {
@@ -75,7 +74,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       if(session.user){
         session.user.name = token.name;
-        session.user.email = token.email;
+        session.user.email = token.email as string;
         session.user.isOAuth = token.isOAuth as boolean;
       }      
       return session;
